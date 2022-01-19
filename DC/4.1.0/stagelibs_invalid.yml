@@ -1,6 +1,0 @@
-streamsets-spark-azure-eventhub-spark-lib:4.1.0
-streamsets-spark-basic-lib:4.1.0
-streamsets-spark-file-lib:4.1.0
-streamsets-spark-jdbc-lib:4.1.0
-streamsets-spark-kafka-no-dependency-lib:4.1.0
-streamsets-transformer-jks-credentialstore-lib:4.1.0
