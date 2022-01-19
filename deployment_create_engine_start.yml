@@ -6,10 +6,6 @@
   # CREATE A DEPLOYMENT AND ENABLE IT in the DataOps Control Hub
 
   vars:
-    # TODO note that in future, user settable variables will be pulled from separate file
-
-    # TODO verify JAVA_HOME is defined and which java is ok, otherwise exit "This playbook requires java8, 11 or 14 to be installed."
-
     # REQUIRED SETTINGS
     # ENVIRONMENT VARIABLES
     # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
@@ -85,11 +81,6 @@
       {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/self/{{ DEPLOYMENT_ID }}/installCommand?installMechanism=BACKGROUND
 
   tasks:
-
-   - name: STREAMSETS_SCH_URL
-     debug:
-        msg: "{{ STREAMSETS_SCH_URL  }}"
-
 
     # --------------------------------------------------------------------------------
    - name: STEP 0.x set SCALA BINARY version to be empty string for DC engine
@@ -206,11 +197,7 @@
 
 
   # --------------------------------------------------------------------------------
-   - name: SECTION 6 - START (ENABLE) DEPLOYMENT
-     ansible.builtin.debug:
-       msg: "SECTION 6 - "
-
-   - name: STEP x.x the start deployment curl command string
+   - name: SECTION 6 - START (ENABLE) DEPLOYMENT - STEP x.x the start deployment curl command string
      uri:
        url: "{{ START_DEPLOYMENT_URL }}"
        method: POST
