@@ -102,6 +102,11 @@
      when: "ENGINE_TYPE=='DC'"
 
   # --------------------------------------------------------------------------------
+
+   - name: debugCREATE_DEPLOYMENT_BINARY_DATA 
+     debug:
+       msg: "{{ CREATE_DEPLOYMENT_BINARY_DATA}}"
+
    - name: SECTION 1 - CREATE DEPLOYMENT STEP 1.1
      uri:
        url: "{{ CREATE_DEPLOYMENT_URL }}"
@@ -160,7 +165,7 @@
   # --------------------------------------------------------------------------------
    - name: SECTION 4.5  - UPDATE ADVANCED CONFIGURATIONS - STEP x.x Find files in the advanced configuration folder named .properties or .policy
      find:
-       paths: "/Users/susannah/ansible/{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/advanced_config"
+       paths: "/Users/susannah/sample-dataops-deployment-ansible/{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/advanced_config"
        patterns: '*.properties,*policy'
        recurse: false
      register: output
