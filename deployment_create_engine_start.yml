@@ -1,0 +1,267 @@
+---
+- name: Create a deployment
+  hosts: controlhub
+  remote_user: susannah
+  
+  # CREATE A DEPLOYMENT AND ENABLE IT in the DataOps Control Hub
+
+  vars:
+    # TODO note that in future, user settable variables will be pulled from separate file
+
+    # TODO verify JAVA_HOME is defined and which java is ok, otherwise exit "This playbook requires java8, 11 or 14 to be installed."
+
+    # REQUIRED SETTINGS
+    # ENVIRONMENT VARIABLES
+    # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
+    CRED_TOKEN: "{{ lookup('env', 'CRED_TOKEN') | default('YOU MUST SET YOUR CRED_TOKEN', true) }}"
+    CRED_ID: "{{ lookup('env','CRED_ID')|default('YOU MUST SET YOUR CRED_ID', true) }}"
+    STREAMSETS_SCH_URL: "{{ lookup('env', 'STREAMSETS_SCH_URL') | default('http://localhost:18631', true) }}"
+    ENVIRONMENT_ID: "{{ lookup('env', 'STREAMSETS_ENV_ID') | default('Environment ID must be configured.', true) }}"
+
+    #  CONFIGURATIONS WITH DEFAULT VALUES
+    ENGINE_TYPE: "DC"   # DC or TF TODO lookup from env and allow a default DC
+    ENGINE_VERSION: "4.1.0" # TODO lookup from env and allow a default DC
+    INSTALL_TYPE: "TARBALL"   # DOCKER or TARBALL # TODO lookup env and default
+    BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
+    SCALA_BINARY_VERSION: "2.11" # "2.11" or "2.12" # TODO lookup env and default
+
+    STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"
+    STREAMSETS_INSTALL_DIR: "{{ lookup('env', 'STREAMSETS_INSTALL_DIR') | default('/tmp/streamsets_install', true) }}"
+
+    # NEW_DEPLOYMENT_NAME: "New_Deployment_Name"
+    NEW_DEPLOYMENT_NAME_BASE: "New_Deployment"
+
+    # OPTIONAL SETTINGS:
+    #   DEPLOYMENT_TAGS
+    #   ENGINE_TAGS
+
+    DEPLOYMENT_HTTP_HEADERS_DICT: {
+      "X-Requested-By":"User",
+      "X-SS-REST-CALL":"true",
+      "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
+      "X-SS-App-Component-Id":"{{CRED_ID}}",
+      "Content-type":"application/json",
+    }
+
+    ADVANCED_HTTP_HEADERS_DICT: {
+      "X-Requested-By":"User",
+      "X-SS-REST-CALL":"true",
+      "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
+      "X-SS-App-Component-Id":"{{CRED_ID}}",
+    }
+
+    ADVANCED_HTTP_HEADERS: >-
+      --header "X-Requested-By:User"
+      --header "X-SS-REST-CALL:true"
+      --header "X-SS-App-Auth-Token:{{CRED_TOKEN}}"
+      --header "X-SS-App-Component-Id:{{CRED_ID}}"
+
+    CREATE_DEPLOYMENT_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployments
+
+    UPDATE_DEPLOYMENT_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}
+
+    COMPLETE_DEPLOYMENT_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}?complete=true&processIfEnabled=true
+
+    START_DEPLOYMENT_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/start
+
+    UPDATE_ADVANCED_CONFIGURATION_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/advancedConfiguration
+
+    CREATE_DEPLOYMENT_BINARY_DATA: >-
+      {"name": "{{ NEW_DEPLOYMENT_NAME }}",
+      "engineType": "{{ ENGINE_TYPE }}",
+      "engineVersion": "{{ ENGINE_VERSION }}",
+      "engineVersionId": "{{ ENGINE_VERSION_ID }}",
+      "envId": "{{ ENVIRONMENT_ID }}",
+      "rawDeploymentTags": [],
+      "type": "SELF" }
+
+
+    GET_INSTALL_COMMAND_URL: >-
+      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/self/{{ DEPLOYMENT_ID }}/installCommand?installMechanism=BACKGROUND
+
+  tasks:
+
+   - name: STREAMSETS_SCH_URL
+     debug:
+        msg: "{{ STREAMSETS_SCH_URL  }}"
+
+
+    # --------------------------------------------------------------------------------
+   - name: STEP 0.x set SCALA BINARY version to be empty string for DC engine
+     set_fact:
+       SCALA_BINARY_VERSION: ""
+     when: "ENGINE_TYPE=='DC'"
+
+   - name: STEP 0.x Create ENGINE_VERSION_ID
+     set_fact:
+       ENGINE_VERSION_ID:  "{{ENGINE_TYPE}}:{{ENGINE_VERSION}}:{{SCALA_BINARY_VERSION}}:{{BUILD_NUMBER}}"
+
+   - name: SECTION 0.x - Set the deployment name
+     set_fact:
+      NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME | default( NEW_DEPLOYMENT_NAME_BASE + '_' + ENGINE_TYPE + '_' + ENGINE_VERSION ) }}"
+
+   - name: STEP 0.. - Add the Scala version if set (only applicable to Transformer)
+     set_fact:
+       NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME + SCALA_BINARY_VERSION }}"
+     when: "ENGINE_TYPE=='DC'"
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 1 - CREATE DEPLOYMENT STEP 1.1
+     uri:
+       url: "{{ CREATE_DEPLOYMENT_URL }}"
+       method: PUT
+       return_content: yes
+       status_code: 201, 200
+       headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
+       body_format: json
+       body: "{{ CREATE_DEPLOYMENT_BINARY_DATA }}"
+     register: json_response
+
+   - name: STEP 1.2 Extract JSON deployment_record
+     set_fact:
+       deployment_record: "{{ json_response.content }}"
+
+   - name: STEP 1.3 Extract Deployment ID from response
+     set_fact:
+        DEPLOYMENT_ID: "{{ deployment_record.id }}"
+  # --------------------------------------------------------------------------------
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 2 - READ STAGELIBRARIES FILE
+     set_fact:
+       STAGELIBS: "{{ lookup('file', './{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/stagelibs.yml').splitlines() }}"
+  # --------------------------------------------------------------------------------
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 3 - UPDATE THE STAGE LIBRARIES - STEP 3.1 Set the stageLibs field in the deployment_record
+     set_fact:
+        deployment_record: "{{ deployment_record|combine({'engineConfiguration': {'stageLibs': STAGELIBS }}, recursive=True) }}"
+
+   - name: 3.x update the install type
+     set_fact:
+       deployment_record: "{{ deployment_record|combine({'installType': INSTALL_TYPE }, recursive=True) }}"
+
+
+    # --------------------------------------------------------------------------------
+   - name: SECTION 4  - SEND UPDATE DEPLOYMENT STAGE LIBRARIES COMMAND
+     uri:
+       url: "{{ UPDATE_DEPLOYMENT_URL }}"
+       method: POST
+       return_content: yes
+       status_code: 201, 200
+       headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
+       body_format: json
+       body: "{{ deployment_record }}"
+     register: json_response
+
+   - name: STEP 4.2 Extract JSON deployment_record
+     set_fact:
+       deployment_record_updated: "{{ json_response.content }}"
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 4.5  - UPDATE ADVANCED CONFIGURATIONS - STEP x.x Find files in the advanced configuration folder named .properties or .policy
+     find:
+       paths: "/Users/susannah/ansible/{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/advanced_config"
+       patterns: '*.properties,*policy'
+       recurse: false
+     register: output
+
+   - name: STEP x.x Extract the file names for advanced configuration files
+     set_fact:
+       advanced_config_filenames:  "{{ advanced_config_filenames | default([]) + [ item.path ] }}"
+     loop: "{{ output.files }}"
+
+   - name: STEP x.x Update each advanced configuration file
+     include_tasks: advanced_config_files_tasks.yml
+     loop: "{{ advanced_config_filenames }}"
+
+   - name: STEP 4.2 Extract JSON deployment_record
+     set_fact:
+        deployment_record_updated: "{{ curlResult.stdout | from_json }}"
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 5 - SET THE DEPLOYMENT TO 'COMPLETE' - STEP 5.x SEND UPDATE TO COMPLETE DEPLOYMENT
+     uri:
+       url: "{{ COMPLETE_DEPLOYMENT_URL }}"
+       method: POST
+       return_content: yes
+       status_code: 201, 200
+       headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
+       body_format: json
+       body: "{{ deployment_record_updated }}"
+     register: json_response
+
+   - name: STEP 5.2 Extract JSON deployment_record
+     set_fact:
+       deployment_record_updated: "{{ json_response.content }}"
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION 6 - START (ENABLE) DEPLOYMENT
+     ansible.builtin.debug:
+       msg: "SECTION 6 - "
+
+   - name: STEP x.x the start deployment curl command string
+     uri:
+       url: "{{ START_DEPLOYMENT_URL }}"
+       method: POST
+       return_content: yes
+       status_code: 201, 200
+       headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
+       body_format: json
+     register: json_response
+
+
+  # --------------------------------------------------------------------------------
+   - name: SECTION X - STEP X.1 Check status of the deployment
+     set_fact:
+       deployment_record_final: "{{ json_response.content }}"
+
+   - name: STEP x.x Check for ENBABLED state
+     assert:
+       that: "deployment_record_final.state == 'ENABLED'"
+       fail_msg: "FAIL: expected deployment in an ENABLED state."
+     ignore_errors: yes
+
+   - name: STEP x.x for OK status
+     assert:
+       that: "deployment_record_final.status == 'OK'"
+       fail_msg: "FAIL: expected deployment in an OK status."
+     ignore_errors: yes
+  # --------------------------------------------------------------------------------
+
+
+  # --------------------------------------------------------------------------------
+
+   - name: SECTION X - START AN ENGINE ON THE NEW DEPLOYMENT
+     uri:
+       url: "{{ GET_INSTALL_COMMAND_URL }}"
+       method: GET
+       return_content: yes
+       status_code: 200
+       headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
+       body_format: json
+     register: installCommand
+
+   - name: STEP x.x - Run retrieved install command
+     ansible.builtin.shell: "{{ installCommand.content }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
+     when: "INSTALL_TYPE=='TARBALL'"
+     register: scriptResult
+     ignore_errors: false
+
+   - name: STEP x.x - Run retrieved install command
+     ansible.builtin.shell: "{{ installCommand.content }}"
+     when: "INSTALL_TYPE=='DOCKER'"
+     register: scriptResult
+     ignore_errors: false
+
+  # --------------------------------------------------------------------------------

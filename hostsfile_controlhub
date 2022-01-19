@@ -1,0 +1,9 @@
+---
+all:
+    children:
+        controlhub:
+            hosts:
+                localhost
+
+            vars:
+                STREAMSETS_DEPLOYMENT_SCH_URL: "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_SCH_URL') }}"
