@@ -123,13 +123,3 @@ This simple playbook uses `uri` tasks to communicate with the DataOps ControlHub
 
 Some very limited error checking is done. Run ansible-playbook with verbose option to diagnose problems.
 
-
-## Project Engineering Documentation {#project-engineering-documentation}
-
-
-### 
-    [Requirements, Design Discussions](https://docs.google.com/document/d/1eyNNIOloKM3KLx75hqrDIvHGrmJEcdCiXTdcNE62hRI/edit#heading=h.q1h504b0bzt3) - Santhosh and Anthony {#requirements-design-discussions-santhosh-and-anthony}
-
-
-### 
-    [Sequence Diagram of Front end to Back end API calls](https://docs.google.com/document/d/1BKIwyNBdcZ6Dh-uCR2cVHtVt39VCciQ81xGg1tfhbTA/edit) {#sequence-diagram-of-front-end-to-back-end-api-calls}
