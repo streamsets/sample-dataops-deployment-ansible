@@ -10,7 +10,6 @@ Conversion notes:
 ----->
 
 
-# sample-dataops-deployment-ansible
 # Automation Support for Self-Managed Engines
 
 
