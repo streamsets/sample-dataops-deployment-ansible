@@ -6,7 +6,7 @@
 - name: create CURL command
   set_fact:
     ADVANCED_CONFIG_CURL: >-
-      curl -v {{ ADVANCED_HTTP_HEADERS }}  -X POST
+      curl {{ ADVANCED_HTTP_HEADERS }}  -X POST
       -F "file=@{{item}}" {{ UPDATE_ADVANCED_CONFIGURATION_URL }}?fileName={{item|basename}}
 
 - name: update each file
