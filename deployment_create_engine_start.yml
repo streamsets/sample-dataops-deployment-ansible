@@ -15,11 +15,12 @@
     ENVIRONMENT_ID: "{{ lookup('env', 'STREAMSETS_ENV_ID') | default('Environment ID must be configured.', true) }}"
 
     #  CONFIGURATIONS WITH DEFAULT VALUES
-    ENGINE_TYPE: "DC"   # DC or TF TODO lookup from env and allow a default DC
+    ENGINE_TYPE: "TF"   # DC or TF TODO lookup from env and allow a default DC
     ENGINE_VERSION: "4.1.0" # TODO lookup from env and allow a default DC
     INSTALL_TYPE: "TARBALL"   # DOCKER or TARBALL # TODO lookup env and default
-    BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
-    SCALA_BINARY_VERSION: "2.11" # "2.11" or "2.12" # TODO lookup env and default
+    # BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
+    BUILD_NUMBER: "9"  # Released or a number # TODO lookup env and default
+    SCALA_BINARY_VERSION: "2.12" # "2.11" or "2.12" # TODO lookup env and default
 
     STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"
     STREAMSETS_INSTALL_DIR: "{{ lookup('env', 'STREAMSETS_INSTALL_DIR') | default('/tmp/streamsets_install', true) }}"
@@ -83,7 +84,7 @@
   tasks:
 
     # --------------------------------------------------------------------------------
-   - name: STEP 0.x set SCALA BINARY version to be empty string for DC engine
+   - name: STEP 0.x set SCALA BINARY version to be empty string for engine
      set_fact:
        SCALA_BINARY_VERSION: ""
      when: "ENGINE_TYPE=='DC'"
@@ -98,12 +99,37 @@
 
    - name: STEP 0.. - Add the Scala version if set (only applicable to Transformer)
      set_fact:
-       NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME + SCALA_BINARY_VERSION }}"
-     when: "ENGINE_TYPE=='DC'"
+       NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME + '_' + SCALA_BINARY_VERSION }}"
+     when: "ENGINE_TYPE=='TF'"
+
+   - name: Add Scala binary version to the deployment creation
+     set_fact:
+       CREATE_DEPLOYMENT_BINARY_DATA: "{{ CREATE_DEPLOYMENT_BINARY_DATA | default({}) | combine ({ item.key : item.value }) }}"
+     with_items:
+       - { 'key': 'scalaBinaryVersion' , 'value': "{{ SCALA_BINARY_VERSION }}" }
+
+   - name: "Ansible | List all known variables and facts"
+     debug:
+       var: hostvars[inventory_hostname]
+
+   - name: "debug print ENVIRONMENT_ID"
+     debug:
+       var: ENVIRONMENT_ID
+
+   - name: Verify required env vars are set
+     assert:
+       that:
+         - CRED_TOKEN is defined
+         - CRED_ID is defined
+         - STREAMSETS_SCH_URL is defined
+         - INSTALL_TYPE is defined
+         - ENVIRONMENT_ID is defined
+         - ENVIRONMENT_ID != "Environment ID must be configured."
+       fail_msg: "At least one required environment variable was not set. Did you defined an environment ID (STREAMSETS_ENV_ID)?"
 
   # --------------------------------------------------------------------------------
 
-   - name: debugCREATE_DEPLOYMENT_BINARY_DATA 
+   - name: debug CREATE_DEPLOYMENT_BINARY_DATA
      debug:
        msg: "{{ CREATE_DEPLOYMENT_BINARY_DATA}}"
 
@@ -131,7 +157,21 @@
   # --------------------------------------------------------------------------------
    - name: SECTION 2 - READ STAGELIBRARIES FILE
      set_fact:
-       STAGELIBS: "{{ lookup('file', './{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/stagelibs.yml').splitlines() }}"
+       ADVANCED_CONFIG_PATH: '{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}'
+     when: "ENGINE_TYPE=='DC'"
+
+   - name: STEP 2.2 - Set path to the stagelibs.yml file
+     set_fact:
+       ADVANCED_CONFIG_PATH: '{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/{{ SCALA_BINARY_VERSION }}'
+     when: "ENGINE_TYPE=='TF'"
+
+   - name: STEP 2.x - Add onto the path to the stagelibs.yml file
+     set_fact:
+       STAGELIBS_PATH: "{{ ADVANCED_CONFIG_PATH }}/stagelibs.yml"
+
+   - name: STEP 2.x - Read stagelibraries file
+     set_fact:
+       STAGELIBS: "{{ lookup('file', '{{ STAGELIBS_PATH }}').splitlines() }}"
   # --------------------------------------------------------------------------------
 
 
@@ -144,8 +184,12 @@
      set_fact:
        deployment_record: "{{ deployment_record|combine({'installType': INSTALL_TYPE }, recursive=True) }}"
 
-
     # --------------------------------------------------------------------------------
+
+   - name: "debug deployment_record"
+     debug:
+       var: deployment_record
+
    - name: SECTION 4  - SEND UPDATE DEPLOYMENT STAGE LIBRARIES COMMAND
      uri:
        url: "{{ UPDATE_DEPLOYMENT_URL }}"
@@ -165,7 +209,7 @@
   # --------------------------------------------------------------------------------
    - name: SECTION 4.5  - UPDATE ADVANCED CONFIGURATIONS - STEP x.x Find files in the advanced configuration folder named .properties or .policy
      find:
-       paths: "/Users/susannah/sample-dataops-deployment-ansible/{{ ENGINE_TYPE }}/{{ ENGINE_VERSION }}/advanced_config"
+       paths: "{{ playbook_dir }}/{{ ADVANCED_CONFIG_PATH }}/advanced_config/"
        patterns: '*.properties,*policy'
        recurse: false
      register: output
@@ -185,6 +229,7 @@
 
 
   # --------------------------------------------------------------------------------
+
    - name: SECTION 5 - SET THE DEPLOYMENT TO 'COMPLETE' - STEP 5.x SEND UPDATE TO COMPLETE DEPLOYMENT
      uri:
        url: "{{ COMPLETE_DEPLOYMENT_URL }}"
@@ -244,13 +289,17 @@
        body_format: json
      register: installCommand
 
-   - name: STEP x.x - Run retrieved install command
+   - name: "debug install command"
+     debug:
+       var: installCommand.content
+
+   - name: STEP x.x - Run retrieved install command for TARBALL installations
      ansible.builtin.shell: "{{ installCommand.content }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
      when: "INSTALL_TYPE=='TARBALL'"
      register: scriptResult
      ignore_errors: false
 
-   - name: STEP x.x - Run retrieved install command
+   - name: STEP x.x - Run retrieved install command for DOCKER installations
      ansible.builtin.shell: "{{ installCommand.content }}"
      when: "INSTALL_TYPE=='DOCKER'"
      register: scriptResult

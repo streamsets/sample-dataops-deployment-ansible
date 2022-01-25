@@ -3,19 +3,11 @@
   set_fact:
     advanced_config_file_content: "{{ lookup('file',  item  ) }}"
 
-- name: debug something
-  debug:
-    msg: "{{  advanced_config_file_content }}"
-
 - name: create CURL command
   set_fact:
     ADVANCED_CONFIG_CURL: >-
-      curl {{ ADVANCED_HTTP_HEADERS }}  -X POST
+      curl -v {{ ADVANCED_HTTP_HEADERS }}  -X POST
       -F "file=@{{item}}" {{ UPDATE_ADVANCED_CONFIGURATION_URL }}?fileName={{item|basename}}
-
-- name: update each file
-  debug:
-    msg: "{{ ADVANCED_CONFIG_CURL }}"
 
 - name: update each file
   ansible.builtin.shell: "{{ ADVANCED_CONFIG_CURL }}"

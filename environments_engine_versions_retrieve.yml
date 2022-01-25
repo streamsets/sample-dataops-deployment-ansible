@@ -69,6 +69,14 @@
       when:
         "item.type=='SELF'"
 
+    - name: STEP 1.x Make a copy paste line for the environment variable
+      ansible.builtin.debug:
+        msg: "export STREAMSETS_ENV_ID={{ item.id }}"
+      loop:
+        "{{ env_record_json.data  }}"
+      when:
+        "item.type=='SELF'"
+
     - name: STEP 1.x Pull data from each line and print all the Name, ID and type of environments for environments with type matching SELF
       set_fact:
         environment_id_matching: "{{ environment_id_matching | default([]) + [ item.id ]  }}"
@@ -76,10 +84,6 @@
         "{{ env_record_json.data  }}"
       when:
         "item.type=='SELF'"
-
-    - name: debug something
-      debug:
-        msg: "{{ environment_id_matching }}"
 
     # --------------------------------------------------------------------------------
 
