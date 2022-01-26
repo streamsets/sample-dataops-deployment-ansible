@@ -1,7 +1,6 @@
 ---
 - name: retrieve environments
   hosts: controlhub
-  remote_user: susannah
 
   #
   # Retrieve the available Environments and Engine Versions from the DataOps control hub.

@@ -28,7 +28,7 @@
       shell: yum-config-manager --enable extras
 
     - name: Install docker-ce (centos) via amazon-linux-extras packages
-      shell: "amazon-linux-extras install docker"
+      shell: "amazon-linux-extras install docker -y"
       # shell: "amazon-linux-extras install docker=18.06.1 -y"
 
     - name: Enable Docker CE service at startup
@@ -37,10 +37,22 @@
         state: started
         enabled: yes
 
-    - name: Add users to docker group
+    - name: Ensure group "docker" exists with correct gid
+      ansible.builtin.group:
+        name: docker
+        state: present
+        gid: 1750
+
+    - name: Change permissions to allow members of docker group to run docker
+      ansible.builtin.file:
+        path:  /var/run/docker.sock
+        group: docker
+        mode: '666'
+
+    - name: Add the current user to docker group
       user:
         name: '{{ item }}'
         groups: 'docker'
         append: 'yes'
       with_items:
-        - ec2-user
+        - "{{ ansible_user_id }}"

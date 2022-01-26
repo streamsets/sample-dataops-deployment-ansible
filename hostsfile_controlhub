@@ -16,20 +16,17 @@ all:
                 ENVIRONMENT_ID: "{{ lookup('env', 'STREAMSETS_ENV_ID') | default('Environment ID must be configured.', true) }}"
 
                 #  CONFIGURATIONS WITH DEFAULT VALUES
-                ENGINE_TYPE: "DC"   # DC or TF TODO lookup from env and allow a default DC
-                ENGINE_VERSION: "4.1.0" # TODO lookup from env and allow a default DC
-                # INSTALL_TYPE: "DOCKER"   # DOCKER or TARBALL # TODO lookup env and default
+                ENGINE_TYPE: "{{ lookup('env', 'STREAMSETS_ENGINE_TYPE') | default('DC' , true) }}"
+                ENGINE_VERSION: "{{ lookup('env', 'STREAMSETS_ENGINE_VERSION') | default('4.1.0' , true) }}"
                 INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
-                # BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
-                BUILD_NUMBER: "37"  # Released or a number # TODO lookup env and default
-                # SCALA_BINARY_VERSION: "2.12" # "2.11" or "2.12" # TODO lookup env and default
+                BUILD_NUMBER: "{{ lookup('env', 'STREAMSETS_BUILD_NUMBER') | default('Released' , true) }}"   # Released or a number
+                SCALA_BINARY_VERSION: "{{ lookup('env', 'STREAMSETS_SCALA_BINARY_VERSION') | default('2.12' , true) }}"  # "2.11" or "2.12"
 
-                # NEW_DEPLOYMENT_NAME: "New_Deployment_Name"
                 NEW_DEPLOYMENT_NAME_BASE: "New_Deployment"
 
                 # OPTIONAL SETTINGS:
-                #   DEPLOYMENT_TAGS
-                #   ENGINE_TAGS
+                # "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_TAGS' ) }}"
+                # "{{ lookup('env', 'STREAMSETS_ENGINE_TAGS' ) }}"
 
                 DEPLOYMENT_HTTP_HEADERS_DICT: {
                   "X-Requested-By":"User",
@@ -76,17 +73,15 @@ all:
                   "rawDeploymentTags": [],
                   "type": "SELF" }
 
-
                 GET_INSTALL_COMMAND_URL: >-
                   {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/self/{{ DEPLOYMENT_ID }}/installCommand?installMechanism=BACKGROUND
 
         engines:
             hosts:
-                172.31.24.131:
-                172.31.24.12:
 
             vars:
                 INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
+                # INSTALL_TYPE must be defined for both hosts groups, and it must be the same
 
                 STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"
                 STREAMSETS_INSTALL_DIR: "{{ lookup('env', 'STREAMSETS_INSTALL_DIR') | default('/tmp/streamsets_install', true) }}"

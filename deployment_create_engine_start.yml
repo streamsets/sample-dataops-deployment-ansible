@@ -1,8 +1,7 @@
 ---
 - name: Create a deployment
   hosts: controlhub
-  remote_user: susannah
-  
+
   # CREATE A DEPLOYMENT AND ENABLE IT in the DataOps Control Hub
 
   vars:
@@ -203,14 +202,6 @@
         headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
         body_format: json
       register: installCommandInHere
-
-    - name: debug installCommandInHere
-      debug:
-        msg: "{{ installCommandInHere }}"
-
-    - name: debug installCommandInHere
-      debug:
-        msg: "{{ installCommandInHere | type_debug }}"
 
     - name: Register dummy host with variable
       add_host:
