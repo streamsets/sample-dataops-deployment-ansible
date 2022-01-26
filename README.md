@@ -21,7 +21,9 @@ Conversion notes:
 
 #### The Sample Playbook
 
-Is these two files: [Deployment_create_engine_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/deployment_create_engine_start.yml) with [advanced_config_files_tasks.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/advanced_config_files_tasks.yml)
+Is these two files: [Deployment_create_engine_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/deployment_create_engine_start.yml)
+with [advanced_config_files_tasks.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/advanced_config_files_tasks.yml)
+and [engines_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/engines_start.yml)
 
 
 #### Sample hostsfile
