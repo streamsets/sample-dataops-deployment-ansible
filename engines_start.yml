@@ -1,0 +1,27 @@
+---
+- name: Start an engine
+  hosts: engines
+  remote_user: ec2-user
+
+  tasks:
+    # --------------------------------------------------------------------------------
+    - name: STEP 8.x Extract the command
+      set_fact:
+        installCommand: "{{ hostvars['INSTALL_COMMAND_HOST']['INSTALL_COMMAND_VAR'] }}"
+
+    - name: STEP 8.x - Run retrieved install command for TARBALL installations
+      ansible.builtin.shell: "{{ installCommand }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
+      when: "INSTALL_TYPE=='TARBALL'"
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      register: scriptResult
+      ignore_errors: false
+
+    - name: STEP 8.x - Run retrieved install command for DOCKER installations
+      ansible.builtin.shell: "{{ installCommand }}"
+      when: "INSTALL_TYPE=='DOCKER'"
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      register: scriptResult
+      ignore_errors: false
+    # --------------------------------------------------------------------------------
