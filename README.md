@@ -33,7 +33,6 @@ Is these two files: [Deployment_create_engine_start.yml](https://github.com/stre
 
 
 
-* At the time of this writing, this playbook uses the same address as the control hub host and the running engine.
 * Tested only on BSD Bash Darwin Kernel Version 20.6.0 using a MacBook 
 
 
@@ -41,7 +40,7 @@ Is these two files: [Deployment_create_engine_start.yml](https://github.com/stre
 
 
 
-* Java 8, 11 or 14 installed
+* Java 8, 11 or 14 installed on the host nodes
 * Parent directories for engine installation and download directories must exist on the host where the engine(s) will run. The defaults are /tmp/streamsets.download and /tmp/streamsets.install
 
 

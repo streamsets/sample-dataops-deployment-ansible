@@ -5,6 +5,28 @@
 
   tasks:
     # --------------------------------------------------------------------------------
+    # install java 11, create directories
+
+    - name: STEP X.x
+      ansible.builtin.yum:
+        name: java-11-amazon-corretto.x86_64
+        state: present
+        allow_downgrade: yes
+      become: yes
+
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ STREAMSETS_DOWNLOAD_DIR }}"
+        state: directory
+
+    - name: Create directories
+      ansible.builtin.file:
+        path: "{{ STREAMSETS_INSTALL_DIR }}"
+        state: directory
+    # --------------------------------------------------------------------------------
+
+
+    # --------------------------------------------------------------------------------
     - name: STEP 8.x Extract the command
       set_fact:
         installCommand: "{{ hostvars['INSTALL_COMMAND_HOST']['INSTALL_COMMAND_VAR'] }}"
