@@ -17,17 +17,6 @@
 
   vars:
     # ENVIRONMENT VARIABLES
-    # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
-    CRED_TOKEN: "{{ lookup('env', 'CRED_TOKEN') | default('YOU MUST SET YOUR CRED_TOKEN', true) }}"
-    CRED_ID: "{{ lookup('env','CRED_ID')|default('YOU MUST SET YOUR CRED_ID', true) }}"
-    STREAMSETS_SCH_URL: "{{ lookup('env', 'STREAMSETS_SCH_URL') | default('http://localhost:18631', true) }}"
-
-    # Optional settings
-    ENGINE_TYPE: "TF"
-    ENGINE_VERSION: "4.1.0"
-    SCALA_BINARY_VERSION: "2.11"    # "2.11" or "2.12"
-
-    # ENGINE_VERSION_ID_PREFIX: "{{ ENGINE_TYPE }}:{{ENGINE_VERSION}}:{{SCALA_BINARY_VERSION}}"
 
     STREAMSETS_RETRIEVE_ENV_URL: >-
       {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/environments
@@ -60,7 +49,7 @@
       set_fact:
         env_record_json: "{{ json_response.content }}"
 
-    - name: STEP 1.x Pull data from each line and print all the Name, ID and type of environments for environments with type matching SELF
+    - name: STEP 1.3 Pull data from each line and print all the Name, ID and type of environments for environments with type matching SELF
       ansible.builtin.debug:
         msg: "Environment Name,ID,Type: {{ item.name, item.id, item.type if item.type=='SELF' }}"
       loop:
@@ -68,7 +57,7 @@
       when:
         "item.type=='SELF'"
 
-    - name: STEP 1.x Make a copy paste line for the environment variable
+    - name: STEP 1.4 Make a copy paste line for the environment variable
       ansible.builtin.debug:
         msg: "export STREAMSETS_ENV_ID={{ item.id }}"
       loop:
@@ -76,7 +65,7 @@
       when:
         "item.type=='SELF'"
 
-    - name: STEP 1.x Pull data from each line and print all the Name, ID and type of environments for environments with type matching SELF
+    - name: STEP 1.5 Pull data from each line and print all the Name, ID and type of environments for environments with type matching SELF
       set_fact:
         environment_id_matching: "{{ environment_id_matching | default([]) + [ item.id ]  }}"
       loop:
@@ -107,7 +96,7 @@
         engine_version_id_matching: "{{ engine_version_id_matching | default([]) + [ item.id ]  }}"
       loop: "{{ eng_record.data }}"
 
-    - name: STEP 2.6 print engineversion data ID and version
+    - name: STEP 2.4 print engineversion data ID and version
       ansible.builtin.debug:
         msg: "{{ engine_version_id_matching }}"
     # --------------------------------------------------------------------------------

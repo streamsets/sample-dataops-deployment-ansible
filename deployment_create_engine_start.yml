@@ -14,28 +14,28 @@
       set_fact:
         NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME | default( NEW_DEPLOYMENT_NAME_BASE + '_' + ENGINE_TYPE + '_' + ENGINE_VERSION ) }}"
 
-    - name: STEP 0.x set SCALA BINARY version to be empty string for engine
+    - name: STEP 0.1 set SCALA BINARY version to be empty string for engine
       set_fact:
         SCALA_BINARY_VERSION: ""
       when: "ENGINE_TYPE=='DC'"
 
-    - name: STEP 0.x Create ENGINE_VERSION_ID
+    - name: STEP 0.2 Create ENGINE_VERSION_ID
       set_fact:
         ENGINE_VERSION_ID:  "{{ENGINE_TYPE}}:{{ENGINE_VERSION}}:{{SCALA_BINARY_VERSION}}:{{BUILD_NUMBER}}"
 
-    - name: STEP 0.x - Add the Scala version if set (only applicable to Transformer)
+    - name: STEP 0.3 - Add the Scala version if set (only applicable to Transformer)
       set_fact:
         NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME + '_' + SCALA_BINARY_VERSION }}"
       when: "ENGINE_TYPE=='TF'"
 
-    - name: STEP 0.x Add Scala binary version to the deployment creation
+    - name: STEP 0.4 Add Scala binary version to the deployment creation
       set_fact:
         CREATE_DEPLOYMENT_BINARY_DATA: "{{ CREATE_DEPLOYMENT_BINARY_DATA | default({}) | combine ({ item.key : item.value }) }}"
       with_items:
         - { 'key': 'scalaBinaryVersion' , 'value': "{{ SCALA_BINARY_VERSION }}" }
       when: "ENGINE_TYPE=='TF'"
 
-    - name: STEP 0.x Verify required env vars are set
+    - name: STEP 0.5 Verify required env vars are set
       assert:
         that:
           - CRED_TOKEN is defined
@@ -95,14 +95,14 @@
       set_fact:
          deployment_record: "{{ deployment_record|combine({'engineConfiguration': {'stageLibs': STAGELIBS }}, recursive=True) }}"
 
-    - name: STEP 3.x Update the install type
+    - name: STEP 3.2 Update the install type
       set_fact:
         deployment_record: "{{ deployment_record|combine({'installType': INSTALL_TYPE }, recursive=True) }}"
     # --------------------------------------------------------------------------------
 
 
     # --------------------------------------------------------------------------------
-    - name: SECTION 4  - SEND UPDATE DEPLOYMENT STAGE LIBRARIES COMMAND
+    - name: SECTION 4  - SEND UPDATE DEPLOYMENT STAGE LIBRARIES COMMAND - STEP 4.1 Update the deployment
       uri:
         url: "{{ UPDATE_DEPLOYMENT_URL }}"
         method: POST
@@ -120,30 +120,30 @@
 
 
    # --------------------------------------------------------------------------------
-    - name: SECTION 4.5  - UPDATE ADVANCED CONFIGURATIONS - STEP 4.x Find files in the advanced configuration folder named .properties or .policy
+    - name: SECTION 4.5  - UPDATE ADVANCED CONFIGURATIONS - STEP 4.5.1 Find files in the advanced configuration folder named .properties or .policy
       find:
         paths: "{{ playbook_dir }}/{{ ADVANCED_CONFIG_PATH }}/advanced_config/"
         patterns: '*.properties,*policy'
         recurse: false
       register: output
 
-    - name: STEP 4.x Extract the file names for advanced configuration files
+    - name: STEP 4.5.2 Extract the file names for advanced configuration files
       set_fact:
         advanced_config_filenames:  "{{ advanced_config_filenames | default([]) + [ item.path ] }}"
       loop: "{{ output.files }}"
 
-    - name: STEP 4.x Update each advanced configuration file
+    - name: STEP 4.5.3 Update each advanced configuration file
       include_tasks: advanced_config_files_tasks.yml
       loop: "{{ advanced_config_filenames }}"
 
-    - name: STEP 4.x Extract JSON deployment_record
+    - name: STEP 4.5.4 Extract JSON deployment_record
       set_fact:
          deployment_record_updated: "{{ curlResult.stdout | from_json }}"
     # --------------------------------------------------------------------------------
 
 
     # --------------------------------------------------------------------------------
-    - name: SECTION 5 - SET THE DEPLOYMENT TO 'COMPLETE' - STEP 5.x SEND UPDATE TO COMPLETE DEPLOYMENT
+    - name: SECTION 5 - SET THE DEPLOYMENT TO 'COMPLETE' - STEP 5.1 SEND UPDATE TO COMPLETE DEPLOYMENT
       uri:
         url: "{{ COMPLETE_DEPLOYMENT_URL }}"
         method: POST
@@ -161,7 +161,7 @@
 
 
     # --------------------------------------------------------------------------------
-    - name: SECTION 6 - START (ENABLE) DEPLOYMENT - STEP 6.x the start deployment curl command string
+    - name: SECTION 6 - START (ENABLE) DEPLOYMENT - STEP 6.1 the start deployment curl command string
       uri:
         url: "{{ START_DEPLOYMENT_URL }}"
         method: POST
@@ -178,13 +178,13 @@
       set_fact:
         deployment_record_final: "{{ json_response.content }}"
 
-    - name: STEP 7.x Check for ENBABLED state
+    - name: STEP 7.2 Check for ENBABLED state
       assert:
         that: "deployment_record_final.state == 'ENABLED'"
         fail_msg: "FAIL: expected deployment in an ENABLED state."
       ignore_errors: yes
 
-    - name: STEP 7.x for OK status
+    - name: STEP 7.3 for OK status
       assert:
         that: "deployment_record_final.status == 'OK'"
         fail_msg: "FAIL: expected deployment in an OK status."
@@ -208,9 +208,6 @@
         name: "INSTALL_COMMAND_HOST"
         INSTALL_COMMAND_VAR: " {{ installCommandInHere.content }}"
 
-# If the engines hosts are on EC2, install docker
-- name: Docker
-  import_playbook: ansible_playbook-aws-install-docker.yml
 
 - name: Engines
   import_playbook: engines_start.yml

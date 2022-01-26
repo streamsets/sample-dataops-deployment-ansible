@@ -5,14 +5,27 @@
 
   tasks:
     # --------------------------------------------------------------------------------
-    # install java 11, create directories
+    # Prerequisites
 
-    - name: STEP X.x
-      ansible.builtin.yum:
-        name: java-11-amazon-corretto.x86_64
-        state: present
-        allow_downgrade: yes
-      become: yes
+    - name: Add the current user to docker group
+      user:
+        name: '{{ item }}'
+        groups: 'docker'
+        append: 'yes'
+      with_items:
+        - "{{ ansible_user_id }}"
+      when: INSTALL_TYPE == 'DOCKER'
+      ignore_errors: yes
+
+    - name: If docker is needed, check whether it's installed
+      ansible.builtin.shell:
+        cmd: "docker --version"
+      when: INSTALL_TYPE == 'DOCKER'
+
+    - name: If java is needed, check whether it's installed
+      ansible.builtin.shell:
+        cmd: "java -version"
+      when: INSTALL_TYPE == 'TARBALL'
 
     - name: Create directories
       ansible.builtin.file:
@@ -27,11 +40,11 @@
 
 
     # --------------------------------------------------------------------------------
-    - name: STEP 8.x Extract the command
+    - name: SECTION 9 - RUN THE INSTALLATION COMMAND - STEP 9.1 Extract the command
       set_fact:
         installCommand: "{{ hostvars['INSTALL_COMMAND_HOST']['INSTALL_COMMAND_VAR'] }}"
 
-    - name: STEP 8.x - Run retrieved install command for TARBALL installations
+    - name: STEP 9.2 - Run retrieved install command for TARBALL installations
       ansible.builtin.shell: "{{ installCommand }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
       when: "INSTALL_TYPE=='TARBALL'"
       environment:
@@ -39,7 +52,7 @@
       register: scriptResult
       ignore_errors: false
 
-    - name: STEP 8.x - Run retrieved install command for DOCKER installations
+    - name: STEP 9.3 - Run retrieved install command for DOCKER installations
       ansible.builtin.shell: "{{ installCommand }}"
       when: "INSTALL_TYPE=='DOCKER'"
       environment:

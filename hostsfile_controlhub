@@ -22,7 +22,7 @@ all:
                 BUILD_NUMBER: "{{ lookup('env', 'STREAMSETS_BUILD_NUMBER') | default('Released' , true) }}"   # Released or a number
                 SCALA_BINARY_VERSION: "{{ lookup('env', 'STREAMSETS_SCALA_BINARY_VERSION') | default('2.12' , true) }}"  # "2.11" or "2.12"
 
-                NEW_DEPLOYMENT_NAME_BASE: "New_Deployment"
+                NEW_DEPLOYMENT_NAME_BASE: "{{ lookup('env', 'STREAMSETS_NEW_DEPLOYMENT_NAME_BASE') | default('NewDeployment' , true) }}"  # "2.11" or "2.12"
 
                 # OPTIONAL SETTINGS:
                 # "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_TAGS' ) }}"
