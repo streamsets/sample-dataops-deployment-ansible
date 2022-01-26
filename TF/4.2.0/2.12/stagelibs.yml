@@ -1,0 +1,4 @@
+streamsets-spark-basic-lib:4.2.0
+streamsets-spark-file-lib:4.2.0
+streamsets-spark-hive-lib:4.2.0
+streamsets-spark-jdbc-lib:4.2.0
