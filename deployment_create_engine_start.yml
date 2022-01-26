@@ -6,80 +6,6 @@
   # CREATE A DEPLOYMENT AND ENABLE IT in the DataOps Control Hub
 
   vars:
-    # REQUIRED SETTINGS
-    # ENVIRONMENT VARIABLES
-    # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
-    CRED_TOKEN: "{{ lookup('env', 'CRED_TOKEN') | default('YOU MUST SET YOUR CRED_TOKEN', true) }}"
-    CRED_ID: "{{ lookup('env','CRED_ID')|default('YOU MUST SET YOUR CRED_ID', true) }}"
-    STREAMSETS_SCH_URL: "{{ lookup('env', 'STREAMSETS_SCH_URL') | default('http://localhost:18631', true) }}"
-    ENVIRONMENT_ID: "{{ lookup('env', 'STREAMSETS_ENV_ID') | default('Environment ID must be configured.', true) }}"
-
-    #  CONFIGURATIONS WITH DEFAULT VALUES
-    ENGINE_TYPE: "TF"   # DC or TF TODO lookup from env and allow a default DC
-    ENGINE_VERSION: "4.1.0" # TODO lookup from env and allow a default DC
-    INSTALL_TYPE: "TARBALL"   # DOCKER or TARBALL # TODO lookup env and default
-    # BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
-    BUILD_NUMBER: "9"  # Released or a number # TODO lookup env and default
-    SCALA_BINARY_VERSION: "2.12" # "2.11" or "2.12" # TODO lookup env and default
-
-    STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"
-    STREAMSETS_INSTALL_DIR: "{{ lookup('env', 'STREAMSETS_INSTALL_DIR') | default('/tmp/streamsets_install', true) }}"
-
-    # NEW_DEPLOYMENT_NAME: "New_Deployment_Name"
-    NEW_DEPLOYMENT_NAME_BASE: "New_Deployment"
-
-    # OPTIONAL SETTINGS:
-    #   DEPLOYMENT_TAGS
-    #   ENGINE_TAGS
-
-    DEPLOYMENT_HTTP_HEADERS_DICT: {
-      "X-Requested-By":"User",
-      "X-SS-REST-CALL":"true",
-      "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
-      "X-SS-App-Component-Id":"{{CRED_ID}}",
-      "Content-type":"application/json",
-    }
-
-    ADVANCED_HTTP_HEADERS_DICT: {
-      "X-Requested-By":"User",
-      "X-SS-REST-CALL":"true",
-      "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
-      "X-SS-App-Component-Id":"{{CRED_ID}}",
-    }
-
-    ADVANCED_HTTP_HEADERS: >-
-      --header "X-Requested-By:User"
-      --header "X-SS-REST-CALL:true"
-      --header "X-SS-App-Auth-Token:{{CRED_TOKEN}}"
-      --header "X-SS-App-Component-Id:{{CRED_ID}}"
-
-    CREATE_DEPLOYMENT_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployments
-
-    UPDATE_DEPLOYMENT_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}
-
-    COMPLETE_DEPLOYMENT_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}?complete=true&processIfEnabled=true
-
-    START_DEPLOYMENT_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/start
-
-    UPDATE_ADVANCED_CONFIGURATION_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/advancedConfiguration
-
-    CREATE_DEPLOYMENT_BINARY_DATA: >-
-      {"name": "{{ NEW_DEPLOYMENT_NAME }}",
-      "engineType": "{{ ENGINE_TYPE }}",
-      "engineVersion": "{{ ENGINE_VERSION }}",
-      "engineVersionId": "{{ ENGINE_VERSION_ID }}",
-      "envId": "{{ ENVIRONMENT_ID }}",
-      "rawDeploymentTags": [],
-      "type": "SELF" }
-
-
-    GET_INSTALL_COMMAND_URL: >-
-      {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/self/{{ DEPLOYMENT_ID }}/installCommand?installMechanism=BACKGROUND
 
   tasks:
 
@@ -108,6 +34,7 @@
         CREATE_DEPLOYMENT_BINARY_DATA: "{{ CREATE_DEPLOYMENT_BINARY_DATA | default({}) | combine ({ item.key : item.value }) }}"
       with_items:
         - { 'key': 'scalaBinaryVersion' , 'value': "{{ SCALA_BINARY_VERSION }}" }
+      when: "ENGINE_TYPE=='TF'"
 
     - name: STEP 0.x Verify required env vars are set
       assert:
@@ -267,7 +194,7 @@
 
 
    # --------------------------------------------------------------------------------
-    - name: SECTION 8 - START AN ENGINE ON THE NEW DEPLOYMENT
+    - name: SECTION 8 - ENGINES - STEP 8.1 get the installation command from the deployment
       uri:
         url: "{{ GET_INSTALL_COMMAND_URL }}"
         method: GET
@@ -275,17 +202,24 @@
         status_code: 200
         headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
         body_format: json
-      register: installCommand
+      register: installCommandInHere
 
-    - name: STEP 8.x - Run retrieved install command for TARBALL installations
-      ansible.builtin.shell: "{{ installCommand.content }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
-      when: "INSTALL_TYPE=='TARBALL'"
-      register: scriptResult
-      ignore_errors: false
+    - name: debug installCommandInHere
+      debug:
+        msg: "{{ installCommandInHere }}"
 
-    - name: STEP 8.x - Run retrieved install command for DOCKER installations
-      ansible.builtin.shell: "{{ installCommand.content }}"
-      when: "INSTALL_TYPE=='DOCKER'"
-      register: scriptResult
-      ignore_errors: false
-    # --------------------------------------------------------------------------------
+    - name: debug installCommandInHere
+      debug:
+        msg: "{{ installCommandInHere | type_debug }}"
+
+    - name: Register dummy host with variable
+      add_host:
+        name: "INSTALL_COMMAND_HOST"
+        INSTALL_COMMAND_VAR: " {{ installCommandInHere.content }}"
+
+# If the engines hosts are on EC2, install docker
+- name: Docker
+  import_playbook: ansible_playbook-aws-install-docker.yml
+
+- name: Engines
+  import_playbook: engines_start.yml

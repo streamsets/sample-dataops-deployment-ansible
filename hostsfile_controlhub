@@ -4,6 +4,89 @@ all:
         controlhub:
             hosts:
                 localhost
-
             vars:
                 STREAMSETS_DEPLOYMENT_SCH_URL: "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_SCH_URL') }}"
+
+                # REQUIRED SETTINGS
+                # ENVIRONMENT VARIABLES
+                # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
+                CRED_TOKEN: "{{ lookup('env', 'CRED_TOKEN') | default('YOU MUST SET YOUR CRED_TOKEN', true) }}"
+                CRED_ID: "{{ lookup('env','CRED_ID')|default('YOU MUST SET YOUR CRED_ID', true) }}"
+                STREAMSETS_SCH_URL: "{{ lookup('env', 'STREAMSETS_SCH_URL') | default('http://localhost:18631', true) }}"
+                ENVIRONMENT_ID: "{{ lookup('env', 'STREAMSETS_ENV_ID') | default('Environment ID must be configured.', true) }}"
+
+                #  CONFIGURATIONS WITH DEFAULT VALUES
+                ENGINE_TYPE: "DC"   # DC or TF TODO lookup from env and allow a default DC
+                ENGINE_VERSION: "4.1.0" # TODO lookup from env and allow a default DC
+                # INSTALL_TYPE: "DOCKER"   # DOCKER or TARBALL # TODO lookup env and default
+                INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
+                # BUILD_NUMBER: "Released"  # Released or a number # TODO lookup env and default
+                BUILD_NUMBER: "37"  # Released or a number # TODO lookup env and default
+                # SCALA_BINARY_VERSION: "2.12" # "2.11" or "2.12" # TODO lookup env and default
+
+                # NEW_DEPLOYMENT_NAME: "New_Deployment_Name"
+                NEW_DEPLOYMENT_NAME_BASE: "New_Deployment"
+
+                # OPTIONAL SETTINGS:
+                #   DEPLOYMENT_TAGS
+                #   ENGINE_TAGS
+
+                DEPLOYMENT_HTTP_HEADERS_DICT: {
+                  "X-Requested-By":"User",
+                  "X-SS-REST-CALL":"true",
+                  "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
+                  "X-SS-App-Component-Id":"{{CRED_ID}}",
+                  "Content-type":"application/json",
+                }
+
+                ADVANCED_HTTP_HEADERS_DICT: {
+                  "X-Requested-By":"User",
+                  "X-SS-REST-CALL":"true",
+                  "X-SS-App-Auth-Token":"{{CRED_TOKEN}}",
+                  "X-SS-App-Component-Id":"{{CRED_ID}}",
+                }
+
+                ADVANCED_HTTP_HEADERS: >-
+                  --header "X-Requested-By:User"
+                  --header "X-SS-REST-CALL:true"
+                  --header "X-SS-App-Auth-Token:{{CRED_TOKEN}}"
+                  --header "X-SS-App-Component-Id:{{CRED_ID}}"
+
+                CREATE_DEPLOYMENT_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployments
+
+                UPDATE_DEPLOYMENT_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}
+
+                COMPLETE_DEPLOYMENT_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}?complete=true&processIfEnabled=true
+
+                START_DEPLOYMENT_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/start
+
+                UPDATE_ADVANCED_CONFIGURATION_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/{{ DEPLOYMENT_ID }}/advancedConfiguration
+
+                CREATE_DEPLOYMENT_BINARY_DATA: >-
+                  {"name": "{{ NEW_DEPLOYMENT_NAME }}",
+                  "engineType": "{{ ENGINE_TYPE }}",
+                  "engineVersion": "{{ ENGINE_VERSION }}",
+                  "engineVersionId": "{{ ENGINE_VERSION_ID }}",
+                  "envId": "{{ ENVIRONMENT_ID }}",
+                  "rawDeploymentTags": [],
+                  "type": "SELF" }
+
+
+                GET_INSTALL_COMMAND_URL: >-
+                  {{ STREAMSETS_SCH_URL }}/provisioning/rest/v1/csp/deployment/self/{{ DEPLOYMENT_ID }}/installCommand?installMechanism=BACKGROUND
+
+        engines:
+            hosts:
+                172.31.24.131:
+                172.31.24.12:
+
+            vars:
+                INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
+
+                STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"
+                STREAMSETS_INSTALL_DIR: "{{ lookup('env', 'STREAMSETS_INSTALL_DIR') | default('/tmp/streamsets_install', true) }}"
