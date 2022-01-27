@@ -66,8 +66,8 @@
     - name: STEP 1.3 Extract Deployment ID from response
       set_fact:
          DEPLOYMENT_ID: "{{ deployment_record.id }}"
-    # --------------------------------------------------------------------------------
 
+    # --------------------------------------------------------------------------------
 
     # --------------------------------------------------------------------------------
     - name: SECTION 2 - READ STAGELIBRARIES FILE, STEP 2.1
@@ -98,6 +98,22 @@
     - name: STEP 3.2 Update the install type
       set_fact:
         deployment_record: "{{ deployment_record|combine({'installType': INSTALL_TYPE }, recursive=True) }}"
+
+    - name: STEP 3.3 Deployment tags
+      set_fact:
+        DEP_TAGS: "{{  DEPLOYMENT_TAGS.split(',') }}"
+
+    - name: STEP 3.4 Deployment tags
+      set_fact:
+        deployment_record: "{{ deployment_record|combine({'rawDeploymentTags': DEP_TAGS }, recursive=True) }}"
+
+    - name: STEP 3.5 Engine labels
+      set_fact:
+        ENG_LABELS: "{{  ENGINE_LABELS.split(',') }}"
+
+    - name: STEP 3.6 Engine labels
+      set_fact:
+        deployment_record: "{{ deployment_record|combine({'engineConfiguration': {'labels': ENG_LABELS }}, recursive=True) }}"
     # --------------------------------------------------------------------------------
 
 

@@ -108,6 +108,8 @@ These settings have default values, so setting these is optional. The defaults a
 * `STREAMSETS_INSTALL_TYPE`: ‘TARBALL’ or ‘DOCKER’. Defaults to ‘TARBALL’
 * `STREAMSETS_BUILD_NUMBER`: ‘Released’  For all released versions of engines, leave this as is.
 * `STREAMSETS_SCALA_BINARY_VERSION`: ‘2.11’ or ‘2.12’. Defaults to ‘2.11’
+* `STREAMSETS_ENGINE_LABELS`:
+* `STREAMSETS_DEPLOYMENT_TAGS`:
 
 
 ### hostsfile

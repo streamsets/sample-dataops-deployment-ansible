@@ -25,8 +25,8 @@ all:
                 NEW_DEPLOYMENT_NAME_BASE: "{{ lookup('env', 'STREAMSETS_NEW_DEPLOYMENT_NAME_BASE') | default('NewDeployment' , true) }}"  # "2.11" or "2.12"
 
                 # OPTIONAL SETTINGS:
-                # "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_TAGS' ) }}"
-                # "{{ lookup('env', 'STREAMSETS_ENGINE_TAGS' ) }}"
+                DEPLOYMENT_TAGS: "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_TAGS' ) }}"
+                ENGINE_LABELS: "{{ lookup('env', 'STREAMSETS_ENGINE_LABELS' ) }}"
 
                 DEPLOYMENT_HTTP_HEADERS_DICT: {
                   "X-Requested-By":"User",
