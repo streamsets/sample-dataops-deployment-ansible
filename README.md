@@ -96,15 +96,36 @@ As shown in this example structure.
 
 #### Required Environment Variable Settings
 
-Some information must be supplied first for the playbook to run. Set these as environment variables.
+Some information must be supplied first for the playbook to run. You can set these as environment variables or by editing the hostsfile.
 
 
 
 * `CRED_TOKEN`: From the StreamSets ControlHub, under Manage => API Credentials, generate credentials and copy-paste the environment variables from “Example usage:”
 * `CRED_ID`: (same)
 * `STREAMSETS_SCH_URL`: path to the DataOps ControlHub (e.g. `cloud.login.streamsets.com`)
-* `STREAMSETS_ENV_ID`: A self-managed environment must exist. Copy the ID into this environment variable
-* `STREAMSETS_ENGINE_VERSION`: TODO
+* `STREAMSETS_ENV_ID`: A self-managed environment must exist. Copy the ID into this environment variable. 
+Find it by viewing the details of the environment on the web interface.
+* `STREAMSETS_ENGINE_VERSION`: See below.
+* `STREAMSETS_ENGINE_TYPE`: See below.
+* `STREAMSETS_BUILD_NUMBER`: See below.
+* `STREAMSETS_SCALA_BINARY_VERSION`: See below.
+
+#### How to Specify the Engine Version with environment variables
+*The engine version must already be provisioned for your ORG in StreamSets account.  You cannot provision new engine 
+versions with this playbook. Adding a new engine version must be done by the systems admin in your StreamSets org.*
+
+The engine ID is made up of the engine type, the engine version, the scala binary version (for engine type Transformer) and the build number:
+`{STREAMSETS_ENGINE_TYPE}:{STREAMSETS_ENGINE_VERSION}:{STREAMSETS_SCALA_BINARY_VERSION}:{STREAMSETS_BUILD_NUMBER}`
+
+Example of a datacollector engine ID: `DC:4.3.0::Released`
+
+Example of a transformer engine ID: `TF:4.2.0:2.12:Released`
+
+These are the environment variables to set to specify your desired engine version:
+* `STREAMSETS_ENGINE_TYPE`: ‘DC’ or ‘TF’. Defaults to ‘DC’
+* `STREAMSETS_ENGINE_VERSION`: defaults to ‘4.1.0’
+* `STREAMSETS_SCALA_BINARY_VERSION`: Only applies to Transformer engines. ‘2.11’ or ‘2.12’. Defaults to ‘2.11’
+* `STREAMSETS_BUILD_NUMBER`: ‘Released’  For all released versions of engines, leave this as is.
 
 
 #### Optional Environment Variable Settings
@@ -114,10 +135,6 @@ These settings have default values, so setting these is optional. The defaults a
 * `STREAMSETS_DOWNLOAD_DIR`: on the host where the engine will run, a path to the parent folder of a download folder for a tarball installation
 * `STREAMSETS_INSTALL_DIR`: on the host where the engine will run, a path to the parent folder of an installation folder for a tarball installation
 * `STREAMSETS_INSTALL_TYPE`: ‘TARBALL’ or ‘DOCKER’. Defaults to ‘TARBALL’
-* `STREAMSETS_ENGINE_TYPE`: ‘DC’ or ‘TF’. Defaults to ‘DC’
-* `STREAMSETS_ENGINE_VERSION`: defaults to ‘4.1.0’
-* `STREAMSETS_BUILD_NUMBER`: ‘Released’  For all released versions of engines, leave this as is.
-* `STREAMSETS_SCALA_BINARY_VERSION`: Only applies to Transformer engines. ‘2.11’ or ‘2.12’. Defaults to ‘2.11’
 * `STREAMSETS_ENGINE_LABELS`:
 * `STREAMSETS_DEPLOYMENT_TAGS`:
 
