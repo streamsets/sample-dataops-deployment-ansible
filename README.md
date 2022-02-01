@@ -16,19 +16,27 @@ Conversion notes:
 ###### Revision history: Jan 18 2022 - initial draft
 
 
+### Preface
+Use this Ansible playbook to create a deployment and start one or more engines from that deployment. The deployment will be created in 
+the StreamSets Control Hub, so you should have an account and familiarize yourself with the StreamSets basics for 
+environments, deployments and engines first. It's assumed that you have the default self-managed environment available.
+The engines started with this Ansible playbook will be "self-managed" engines.
+
 
 ## Ansible Playbook to **Create Deployment and Start Engine**
 
 #### The Sample Playbook
 
-Is these files: [Deployment_create_engine_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/deployment_create_engine_start.yml)
+These files: [Deployment_create_engine_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/deployment_create_engine_start.yml)
 with [advanced_config_files_tasks.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/advanced_config_files_tasks.yml)
 and [engines_start.yml](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/engines_start.yml)
+make up the sample playbook.
 
 
 #### Sample hostsfile
 
-[hostsfile_controlhub](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/hostsfile_controlhub)
+A sample hostsfile, [hostsfile_controlhub](https://github.com/streamsets/sample-dataops-deployment-ansible/blob/main/hostsfile_controlhub),
+is included. This is where you specify the hosts where the engines will be run.
 
 
 #### Issues
@@ -41,10 +49,11 @@ and [engines_start.yml](https://github.com/streamsets/sample-dataops-deployment-
 #### Prerequisites
 
 
-
+* [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
 * Java 8, 11 or 14 installed on the host nodes for TARBALL installations
 * Docker installed on the host nodes if doing DOCKER installations and docker daemon started
 * The remote_user must have permissions to run java or docker
+* For connecting to remote hosts, add appropriate credentials to your ansible.cfg
 * Parent directories for engine installation and download directories must exist on the host where the engine(s) will run. The defaults are /tmp/streamsets.download and /tmp/streamsets.install
 
 
@@ -93,8 +102,9 @@ Some information must be supplied first for the playbook to run. Set these as en
 
 * `CRED_TOKEN`: From the StreamSets ControlHub, under Manage => API Credentials, generate credentials and copy-paste the environment variables from “Example usage:”
 * `CRED_ID`: (same)
-* `STREAMSETS_SCH_URL`: path to the DataOps ControlHub (e.g. `hub.streamsets.com`)
-* `STREAMSETS_ENV_ID`: A self-managed environment must exist. Copy the ID into this environment variables
+* `STREAMSETS_SCH_URL`: path to the DataOps ControlHub (e.g. `cloud.login.streamsets.com`)
+* `STREAMSETS_ENV_ID`: A self-managed environment must exist. Copy the ID into this environment variable
+* `STREAMSETS_ENGINE_VERSION`: TODO
 
 
 #### Optional Environment Variable Settings
@@ -103,18 +113,18 @@ These settings have default values, so setting these is optional. The defaults a
 
 * `STREAMSETS_DOWNLOAD_DIR`: on the host where the engine will run, a path to the parent folder of a download folder for a tarball installation
 * `STREAMSETS_INSTALL_DIR`: on the host where the engine will run, a path to the parent folder of an installation folder for a tarball installation
+* `STREAMSETS_INSTALL_TYPE`: ‘TARBALL’ or ‘DOCKER’. Defaults to ‘TARBALL’
 * `STREAMSETS_ENGINE_TYPE`: ‘DC’ or ‘TF’. Defaults to ‘DC’
 * `STREAMSETS_ENGINE_VERSION`: defaults to ‘4.1.0’
-* `STREAMSETS_INSTALL_TYPE`: ‘TARBALL’ or ‘DOCKER’. Defaults to ‘TARBALL’
 * `STREAMSETS_BUILD_NUMBER`: ‘Released’  For all released versions of engines, leave this as is.
-* `STREAMSETS_SCALA_BINARY_VERSION`: ‘2.11’ or ‘2.12’. Defaults to ‘2.11’
+* `STREAMSETS_SCALA_BINARY_VERSION`: Only applies to Transformer engines. ‘2.11’ or ‘2.12’. Defaults to ‘2.11’
 * `STREAMSETS_ENGINE_LABELS`:
 * `STREAMSETS_DEPLOYMENT_TAGS`:
 
 
 ### hostsfile
 
-The hostsfile must include host groups
+The hostsfile must include host groups. An example hostsfile is included.
 * engines<br>the host nodes where engines will be started
 * controlhub<br>where you will run the ansible script commands. This can be localhost.
 
@@ -123,12 +133,18 @@ The hostsfile must include host groups
 #### Run the playbook
 
 * Install Java 8, 11 or 14 on the host nodes for TARBALL installations
-* Install docker on the host nodes if doing DOCKER installations and docker daemon started
+* Install docker on the host nodes if doing DOCKER installations, and start docker daemon
 
 ```
-ansible-playbook -v -i hostsfile_controlhub deployment_create_engine_start.yml
+ansible-playbook -i hostsfile_controlhub deployment_create_engine_start.yml
 ```
 
+Tip: for more human readable output, put ANSIBLE_STDOUT_CALLBACK=yaml on the same line like this:
+
+
+```
+ANSIBLE_STDOUT_CALLBACK=yaml  ansible-playbook -i hostsfile_controlhub deployment_create_engine_start.yml
+```
 
 
 #### Explanation

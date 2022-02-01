@@ -2,8 +2,9 @@
 all:
     children:
         controlhub:
-            hosts:
+            hosts: # Where the ansible script will run, not the URI of the StreamSets Control Hub.
                 localhost
+
             vars:
                 STREAMSETS_DEPLOYMENT_SCH_URL: "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_SCH_URL') }}"
 
@@ -17,7 +18,8 @@ all:
 
                 #  CONFIGURATIONS WITH DEFAULT VALUES
                 ENGINE_TYPE: "{{ lookup('env', 'STREAMSETS_ENGINE_TYPE') | default('DC' , true) }}"
-                ENGINE_VERSION: "{{ lookup('env', 'STREAMSETS_ENGINE_VERSION') | default('4.1.0' , true) }}"
+                ENGINE_VERSION_DC: "{{ lookup('env', 'STREAMSETS_ENGINE_VERSION') | default('4.3.0' , true) }}"
+                ENGINE_VERSION_TF: "{{ lookup('env', 'STREAMSETS_ENGINE_VERSION') | default('4.2.0' , true) }}"
                 INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
                 BUILD_NUMBER: "{{ lookup('env', 'STREAMSETS_BUILD_NUMBER') | default('Released' , true) }}"   # Released or a number
                 SCALA_BINARY_VERSION: "{{ lookup('env', 'STREAMSETS_SCALA_BINARY_VERSION') | default('2.12' , true) }}"  # "2.11" or "2.12"
@@ -78,9 +80,13 @@ all:
 
         engines:
             hosts:
+                localhost:
+                    remote_user: susannah
+                    ansible_connection: local
+                    # remote_user: ec2-user
 
             vars:
-                INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('DOCKER', true) }}"  # DOCKER or TARBALL
+                INSTALL_TYPE: "{{ lookup('env', 'STREAMSETS_INSTALL_TYPE') | default('TARBALL', true) }}"  # DOCKER or TARBALL
                 # INSTALL_TYPE must be defined for both hosts groups, and it must be the same
 
                 STREAMSETS_DOWNLOAD_DIR: "{{ lookup('env', 'STREAMSETS_DOWNLOAD_DIR') | default('/tmp/streamsets_download', true) }}"

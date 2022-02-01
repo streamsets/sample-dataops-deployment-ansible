@@ -1,11 +1,17 @@
 ---
 - name: Start an engine
   hosts: engines
-  remote_user: ec2-user
 
   tasks:
     # --------------------------------------------------------------------------------
     # Prerequisites
+
+    - name: Ensure docker is installed if this is a DOCKER installation
+      pip:
+        name:
+          - docker>=1.8.0
+        executable: pip3.9
+      when: INSTALL_TYPE == 'DOCKER'
 
     - name: Add the current user to docker group
       user:
@@ -40,7 +46,7 @@
 
 
     # --------------------------------------------------------------------------------
-    - name: SECTION 9 - RUN THE INSTALLATION COMMAND - STEP 9.1 Extract the command
+    - name: SECTION 9 - RUN THE INSTALLATION COMMAND - STEP 9.1 Extract the command that was saved as a 'host'
       set_fact:
         installCommand: "{{ hostvars['INSTALL_COMMAND_HOST']['INSTALL_COMMAND_VAR'] }}"
 

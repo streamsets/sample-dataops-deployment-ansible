@@ -7,35 +7,37 @@
   vars:
 
   tasks:
-
     # --------------------------------------------------------------------------------
+    - name: SECTION 0 - Check for required data and set up variables. STEP 0.1 Set engine version number based on engine type, if the engine version is the default value
+      set_fact:
+        ENGINE_VERSION: "{{ ENGINE_VERSION_DC  if ENGINE_TYPE=='DC' else  ENGINE_VERSION_TF }}"
 
-    - name: SECTION 0 - Set deployment name, set Scala version, create engine ID, assert that required env vars are set
+    - name: STEP 0.2 Set deployment name
       set_fact:
         NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME | default( NEW_DEPLOYMENT_NAME_BASE + '_' + ENGINE_TYPE + '_' + ENGINE_VERSION ) }}"
 
-    - name: STEP 0.1 set SCALA BINARY version to be empty string for engine
+    - name: STEP 0.3 set SCALA BINARY version to be empty string for engine type DC
       set_fact:
         SCALA_BINARY_VERSION: ""
       when: "ENGINE_TYPE=='DC'"
 
-    - name: STEP 0.2 Create ENGINE_VERSION_ID
+    - name: STEP 0.4 Create ENGINE_VERSION_ID
       set_fact:
         ENGINE_VERSION_ID:  "{{ENGINE_TYPE}}:{{ENGINE_VERSION}}:{{SCALA_BINARY_VERSION}}:{{BUILD_NUMBER}}"
 
-    - name: STEP 0.3 - Add the Scala version if set (only applicable to Transformer)
+    - name: STEP 0.5 - Add the Scala version to deployment name, if set (only applicable to Transformer)
       set_fact:
         NEW_DEPLOYMENT_NAME: "{{ NEW_DEPLOYMENT_NAME + '_' + SCALA_BINARY_VERSION }}"
       when: "ENGINE_TYPE=='TF'"
 
-    - name: STEP 0.4 Add Scala binary version to the deployment creation
+    - name: STEP 0.6 Add Scala binary version to the deployment creation
       set_fact:
         CREATE_DEPLOYMENT_BINARY_DATA: "{{ CREATE_DEPLOYMENT_BINARY_DATA | default({}) | combine ({ item.key : item.value }) }}"
       with_items:
         - { 'key': 'scalaBinaryVersion' , 'value': "{{ SCALA_BINARY_VERSION }}" }
       when: "ENGINE_TYPE=='TF'"
 
-    - name: STEP 0.5 Verify required env vars are set
+    - name: STEP 0.7 Verify required env vars are set
       assert:
         that:
           - CRED_TOKEN is defined
@@ -43,6 +45,7 @@
           - STREAMSETS_SCH_URL is defined
           - INSTALL_TYPE is defined
           - ENVIRONMENT_ID is defined
+          - ENGINE_VERSION_ID is defined
           - ENVIRONMENT_ID != "Environment ID must be configured."
         fail_msg: "At least one required environment variable was not set. Did you defined an environment ID (STREAMSETS_ENV_ID)?"
    # --------------------------------------------------------------------------------
@@ -99,7 +102,7 @@
       set_fact:
         deployment_record: "{{ deployment_record|combine({'installType': INSTALL_TYPE }, recursive=True) }}"
 
-    - name: STEP 3.3 Deployment tags
+    - name: STEP 3.3 Parse deployment tags
       set_fact:
         DEP_TAGS: "{{  DEPLOYMENT_TAGS.split(',') }}"
 
@@ -107,7 +110,7 @@
       set_fact:
         deployment_record: "{{ deployment_record|combine({'rawDeploymentTags': DEP_TAGS }, recursive=True) }}"
 
-    - name: STEP 3.5 Engine labels
+    - name: STEP 3.5 Parse engine labels
       set_fact:
         ENG_LABELS: "{{  ENGINE_LABELS.split(',') }}"
 
@@ -194,7 +197,7 @@
       set_fact:
         deployment_record_final: "{{ json_response.content }}"
 
-    - name: STEP 7.2 Check for ENBABLED state
+    - name: STEP 7.2 Check for ENABLED state
       assert:
         that: "deployment_record_final.state == 'ENABLED'"
         fail_msg: "FAIL: expected deployment in an ENABLED state."
@@ -219,7 +222,7 @@
         body_format: json
       register: installCommandInHere
 
-    - name: Register dummy host with variable
+    - name: To pass a variable value to the next playbook, register it as a host
       add_host:
         name: "INSTALL_COMMAND_HOST"
         INSTALL_COMMAND_VAR: " {{ installCommandInHere.content }}"
