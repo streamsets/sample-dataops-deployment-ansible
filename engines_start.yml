@@ -10,7 +10,7 @@
       pip:
         name:
           - docker>=1.8.0
-        executable: pip3.9
+        executable: pip3
       when: INSTALL_TYPE == 'DOCKER'
 
     - name: Add the current user to docker group
