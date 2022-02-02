@@ -50,10 +50,10 @@ is included. This is where you specify the hosts where the engines will be run.
 
 
 * [Install Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
-* Java installed on the host nodes. Check the [engine requirements](https://docs.streamsets.com/portal/platform-datacollector/latest/datacollector/UserGuide/Installation/Requirements.html#concept_vzg_n2p_kq) 
-for specific java version requirements.
+* Java installed on the host nodes for TARBALL installations. Check the [engine requirements](https://docs.streamsets.com/portal/platform-datacollector/latest/datacollector/UserGuide/Installation/Requirements.html#concept_vzg_n2p_kq) 
+for specific Java version requirements.
 * Docker installed on the host nodes if doing DOCKER installations and docker daemon started
-* The remote_user must have permissions to run java or docker
+* The remote_user must have permissions to run Java or docker
 * For connecting to remote hosts, add appropriate credentials to your ansible.cfg
 * Parent directories for engine installation and download directories must exist on the host where the engine(s) will run. The defaults are /tmp/streamsets.download and /tmp/streamsets.install
 
@@ -158,6 +158,9 @@ The hostsfile must include host groups. An example hostsfile is included.
 #### Run the playbook
 
 * Install Java 8, 11 or 14 on the host nodes for TARBALL installations
+* Java installed on the host nodes for TARBALL installations. 
+ Check the [engine requirements](https://docs.streamsets.com/portal/platform-datacollector/latest/datacollector/UserGuide/Installation/Requirements.html#concept_vzg_n2p_kq)
+  for specific Java version requirements.
 * Install docker on the host nodes if doing DOCKER installations, and start docker daemon
 
 ```
