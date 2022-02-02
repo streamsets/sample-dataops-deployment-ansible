@@ -5,10 +5,11 @@
 
 - name: create CURL command
   set_fact:
-    ADVANCED_CONFIG_CURL: >-
-      curl {{ ADVANCED_HTTP_HEADERS }}  -X POST
-      -F "file=@{{item}}" {{ UPDATE_ADVANCED_CONFIGURATION_URL }}?fileName={{item|basename}}
+    ADVANCED_CONFIG_CURL: curl {{ ADVANCED_HTTP_HEADERS }} -X POST -F "file=@{{item}}" {{ UPDATE_ADVANCED_CONFIGURATION_URL }}?fileName={{item|basename}}
+  no_log: True
+
 
 - name: update each file
   ansible.builtin.shell: "{{ ADVANCED_CONFIG_CURL }}"
   register: curlResult
+  no_log: True

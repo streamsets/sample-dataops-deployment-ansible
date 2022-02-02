@@ -61,6 +61,7 @@
         body_format: json
         body: "{{ CREATE_DEPLOYMENT_BINARY_DATA }}"
       register: json_response
+      no_log: True
 
     - name: STEP 1.2 Extract JSON deployment_record
       set_fact:
@@ -222,11 +223,13 @@
         headers: "{{ DEPLOYMENT_HTTP_HEADERS_DICT }}"
         body_format: json
       register: installCommandInHere
+      no_log: True
 
     - name: To pass a variable value to the next playbook, register it as a host
       add_host:
         name: "INSTALL_COMMAND_HOST"
         INSTALL_COMMAND_VAR: " {{ installCommandInHere.content }}"
+      no_log: True
 
 
 - name: Engines

@@ -49,6 +49,7 @@
     - name: SECTION 9 - RUN THE INSTALLATION COMMAND - STEP 9.1 Extract the command that was saved as a 'host'
       set_fact:
         installCommand: "{{ hostvars['INSTALL_COMMAND_HOST']['INSTALL_COMMAND_VAR'] }}"
+      no_log: True
 
     - name: STEP 9.2 - Run retrieved install command for TARBALL installations
       ansible.builtin.shell: "{{ installCommand }} --no-prompt --download-dir={{ STREAMSETS_DOWNLOAD_DIR }} --install-dir={{ STREAMSETS_INSTALL_DIR }} --background"
@@ -56,7 +57,7 @@
       environment:
         PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
       register: scriptResult
-      ignore_errors: false
+      no_log: True
 
     - name: STEP 9.3 - Run retrieved install command for DOCKER installations
       ansible.builtin.shell: "{{ installCommand }}"
@@ -64,5 +65,5 @@
       environment:
         PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
       register: scriptResult
-      ignore_errors: false
+      no_log: True
     # --------------------------------------------------------------------------------

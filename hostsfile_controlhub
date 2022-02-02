@@ -6,8 +6,6 @@ all:
                 localhost
 
             vars:
-                STREAMSETS_DEPLOYMENT_SCH_URL: "{{ lookup('env', 'STREAMSETS_DEPLOYMENT_SCH_URL') }}"
-
                 # REQUIRED SETTINGS
                 # ENVIRONMENT VARIABLES
                 # Set your CRED_ID and CRED_TOKEN here or set environment variables CRED_ID and CRED_TOKEN
