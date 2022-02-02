@@ -4,10 +4,12 @@ streamsets-spark-aws_2_7_7-lib:4.2.0
 streamsets-spark-aws_3_2_0-lib:4.2.0
 streamsets-spark-azure-eventhub-spark-lib:4.2.0
 streamsets-spark-azure-no-dependency-lib:4.2.0
+streamsets-spark-azure-sqldb_1_0_2-lib:4.2.0
 streamsets-spark-azure_3_2_0-lib:4.2.0
 streamsets-spark-basic-lib:4.2.0
 streamsets-spark-delta-lake-lib:4.2.0
 streamsets-spark-delta-lake-with-no-dependency-lib:4.2.0
+streamsets-spark-elasticsearch-lib:4.2.0
 streamsets-spark-file-lib:4.2.0
 streamsets-spark-google-cloud-no-dependency-lib:4.2.0
 streamsets-spark-graph-lib:4.2.0
@@ -15,6 +17,10 @@ streamsets-spark-hive-lib:4.2.0
 streamsets-spark-jdbc-lib:4.2.0
 streamsets-spark-kafka-lib:4.2.0
 streamsets-spark-kafka-no-dependency-lib:4.2.0
+streamsets-spark-kudu-lib:4.2.0
+streamsets-spark-mapr-eventstore-lib:4.2.0
+streamsets-spark-mapr-fs-lib:4.2.0
+streamsets-spark-mapr-hive-lib:4.2.0
 streamsets-spark-snowflake-lib:4.2.0
 streamsets-spark-snowflake-with-no-dependency-lib:4.2.0
 streamsets-transformer-aws-secrets-manager-credentialstore-lib:4.2.0

@@ -1,0 +1,49 @@
+// Copyright 2021 StreamSets Inc.
+//
+
+// StreamSets Transformer Policy File
+
+// StreamSets code base:
+grant codebase "file://${transformer.dist.dir}/libexec/bootstrap-libs/-" {
+  permission java.security.AllPermission;
+};
+grant codebase "file://${transformer.dist.dir}/root-lib/*" {
+  permission java.security.AllPermission;
+};
+grant codebase "file://${transformer.dist.dir}/api-lib/*" {
+  permission java.security.AllPermission;
+};
+grant codebase "file://${sdc.asterClientLib.dir}/*" {
+  permission java.security.AllPermission;
+};
+grant codebase "file://${transformer.dist.dir}/container-lib/*" {
+  permission java.security.AllPermission;
+};
+grant codebase "file://${transformer.dist.dir}/externalResources/streamsets-libs-extras/-" {
+  permission java.security.AllPermission;
+};
+// StreamSets stage libraries code base:
+grant codebase "file://${transformer.dist.dir}/streamsets-libs/-" {
+  permission java.security.AllPermission;
+};
+
+// Groovy will parse files in a different context, so we need to grant it additional privileges
+grant codebase "file:/groovy/script" {
+  permission java.lang.RuntimePermission "getClassLoader";
+};
+
+// For details on how to grant specific permissions, refer to the Java Permissions Documentation:
+//   http://docs.oracle.com/javase/7/docs/technotes/guides/security/permissions.html
+
+// User stage libraries code base:
+grant codebase "file://${transformer.dist.dir}/externalResources/user-libs/-" {
+  permission java.util.PropertyPermission "*", "read";
+  permission java.lang.RuntimePermission "accessDeclaredMembers";
+  permission java.lang.reflect.ReflectPermission "suppressAccessChecks";
+};
+
+// For JARs to be available to all stage libraries
+grant codebase "file://${transformer.dist.dir}/libs-common-lib/-" {
+  permission java.security.AllPermission;
+};
+

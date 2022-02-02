@@ -66,30 +66,39 @@ As shown in this example structure.
 
 
 ```
+.
 ├── DC
-│   └── 4.1.0
-│       ├── advanced_config
-│       │   ├── archive
-│       │   │   ├── credential-stores.properties
-│       │   │   ├── sdc-log4j.properties
-│       │   │   ├── sdc-security-policy
-│       │   │   └── sdc.properties
-│       │   └── sdc.properties
-│       └── stagelibs.yml
+│   └── 4.3.0
+│       ├── advanced_config
+│       │   ├── credential-stores.properties
+│       │   ├── sdc-log4j.properties
+│       │   ├── sdc-security-policy
+│       │   └── sdc.properties
+│       ├── stagelibs.yml
+│       └── stagelibs_all.yml
 ├── TF
-│   └── 4.1.0
-│       ├── 2.11
-│       |   └── …
-│       └── 2.12
-│           ├── advanced_config
-│           │   ├── credential-stores.properties
-│           │   ├── transformer-log4j.properties
-│           │   ├── transformer-security.policy
-│           │   └── transformer.properties
-│           └── stagelibs.yml
+│   └── 4.2.0
+│       ├── 2.11
+│       │   ├── advanced_config
+│       │   │   ├── credential-stores.properties
+│       │   │   ├── transformer-log4j.properties
+│       │   │   ├── transformer-security.policy
+│       │   │   └── transformer.properties
+│       │   ├── stagelibs.yml
+│       │   └── stagelibs_all.yml
+│       ├── 2.12
+│       │   ├── advanced_config
+│       │   │   ├── credential-stores.properties
+│       │   │   ├── transformer-log4j.properties
+│       │   │   ├── transformer-security.policy
+│       │   │   └── transformer.properties
+│       │   ├── stagelibs.yml
+│       │   └── stagelibs_all.yml
+│       └── dep.out
 ├── advanced_config_files_tasks.yml
 ├── deployment_create_engine_start.yml
 ├── engines_start.yml
+├── environments_engine_versions_retrieve.yml
 └── hostsfile_controlhub
 ```
 
