@@ -111,8 +111,9 @@ Find it by viewing the details of the environment on the web interface.
 * `STREAMSETS_SCALA_BINARY_VERSION`: See below.
 
 #### How to Specify the Engine Version with environment variables
-*The engine version must already be provisioned for your ORG in StreamSets account.  You cannot provision new engine 
-versions with this playbook. Adding a new engine version must be done by the systems admin in your StreamSets org.*
+*The engine version must already be provisioned for your Organization in your StreamSets account.  You cannot provision new engine 
+versions with this playbook. Adding a new engine version must be done by the systems admin in your StreamSets Organization.*
+To learn about Organizations, Users, Groups and Roles, please see the StreamSets ControlHub documentation.
 
 The engine ID is made up of the engine type, the engine version, the scala binary version (for engine type Transformer) and the build number:
 `{STREAMSETS_ENGINE_TYPE}:{STREAMSETS_ENGINE_VERSION}:{STREAMSETS_SCALA_BINARY_VERSION}:{STREAMSETS_BUILD_NUMBER}`
