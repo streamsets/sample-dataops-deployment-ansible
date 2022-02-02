@@ -157,7 +157,6 @@ The hostsfile must include host groups. An example hostsfile is included.
 
 #### Run the playbook
 
-* Install Java 8, 11 or 14 on the host nodes for TARBALL installations
 * Java installed on the host nodes for TARBALL installations. 
  Check the [engine requirements](https://docs.streamsets.com/portal/platform-datacollector/latest/datacollector/UserGuide/Installation/Requirements.html#concept_vzg_n2p_kq)
   for specific Java version requirements.
